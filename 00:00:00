@@ -1,11 +1,3 @@
---[[
-    CRONÔMETRO COMPLETO - VERSÃO FINAL ATUALIZADA
-    - Interface e Botão Externo totalmente arrastáveis
-    - Textos em Maiúsculo
-    - Sem o fundo escuro nos números
-    - Novo ID para o botão Fechar X
---]]
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -13,9 +5,6 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
---------------------------------------------------------------------------------
--- 1. FUNÇÃO AUXILIAR PARA TORNAR ELEMENTOS ARRASTÁVEIS (PC & MOBILE)
---------------------------------------------------------------------------------
 local function tornarArrastavel(guiElement)
 	local dragging = false
 	local dragStart = nil
@@ -54,230 +43,27 @@ local function tornarArrastavel(guiElement)
 	end)
 end
 
---------------------------------------------------------------------------------
--- 2. CRIAÇÃO DA INTERFACE GRÁFICA
---------------------------------------------------------------------------------
-
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CronometroScreenGui"
 screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
+
+-- // CONFIGURAÇÃO DE UISCALE SOLICITADA
+local UiScale = Instance.new("UIScale", screenGui)
+local function UpdateUIScale()
+    if not UserInputService.TouchEnabled then
+        UiScale.Scale = 1.9 -- 90% maior no PC
+    else
+        UiScale.Scale = 1.0 -- Tamanho padrão no mobile
+    end
+end
+UpdateUIScale()
+UserInputService:GetPropertyChangedSignal("TouchEnabled"):Connect(UpdateUIScale)
 
 -- Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 180, 0, 150)
 mainFrame.Position = UDim2.new(0, 240, 0, 4)
-mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-mainFrame.BorderSizePixel = 0
-mainFrame.Visible = true
-mainFrame.Parent = screenGui
-
-tornarArrastavel(mainFrame) -- Torna a interface arrastável
-
--- Borda Interna Branca
-local borderStroke = Instance.new("UIStroke")
-borderStroke.Color = Color3.fromRGB(255, 255, 255)
-borderStroke.Thickness = 2
-borderStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-borderStroke.Parent = mainFrame
-
-local borderPadding = Instance.new("UIPadding")
-borderPadding.PaddingTop = UDim.new(0, 6)
-borderPadding.PaddingBottom = UDim.new(0, 6)
-borderPadding.PaddingLeft = UDim.new(0, 6)
-borderPadding.PaddingRight = UDim.new(0, 6)
-borderPadding.Parent = mainFrame
-
--- Imagem de Fundo (Sol Transparente)
-local solBackground = Instance.new("ImageLabel")
-solBackground.Name = "SolBackground"
-solBackground.Size = UDim2.new(0.8, 0, 0.8, 0)
-solBackground.Position = UDim2.new(0.5, 0, 0.5, 0)
-solBackground.AnchorPoint = Vector2.new(0.5, 0.5)
-solBackground.BackgroundTransparency = 1
-solBackground.Image = "rbxassetid://85337967115080"
-solBackground.ImageTransparency = 0.88
-solBackground.ZIndex = 1
-solBackground.Parent = mainFrame
-
--- Título "CRONÔMETRO"
-local tituloLabel = Instance.new("TextLabel")
-tituloLabel.Name = "TituloLabel"
-tituloLabel.Size = UDim2.new(1, 0, 0, 25)
-tituloLabel.Position = UDim2.new(0, 0, 0, 2)
-tituloLabel.BackgroundTransparency = 1
-tituloLabel.Text = "CRONÔMETRO" -- MAIÚSCULO
-tituloLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-tituloLabel.Font = Enum.Font.Garamond
-tituloLabel.TextSize = 18
-tituloLabel.ZIndex = 2
-tituloLabel.Parent = mainFrame
-
--- Display do Tempo (Transparência total para sumir com o fundo semi-escuro)
-local displayFrame = Instance.new("Frame")
-displayFrame.Name = "DisplayFrame"
-displayFrame.Size = UDim2.new(0.95, 0, 0, 50)
-displayFrame.Position = UDim2.new(0.5, 0, 0.46, 0)
-displayFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-displayFrame.BackgroundTransparency = 1 -- Fundo removido!
-displayFrame.BorderSizePixel = 0
-displayFrame.ZIndex = 2
-displayFrame.Parent = mainFrame
-
--- Dígitos (00:00.00)
-local timeLabel = Instance.new("TextLabel")
-timeLabel.Name = "TimeLabel"
-timeLabel.Size = UDim2.new(1, 0, 1, 0)
-timeLabel.BackgroundTransparency = 1
-timeLabel.Text = "00:00.00"
-timeLabel.TextColor3 = Color3.fromRGB(176, 188, 198)
-timeLabel.Font = Enum.Font.RobotoMono
-timeLabel.TextSize = 28
-timeLabel.ZIndex = 3
-timeLabel.Parent = displayFrame
-
--- Container dos Botões Inferiores
-local buttonsContainer = Instance.new("Frame")
-buttonsContainer.Name = "ButtonsContainer"
-buttonsContainer.Size = UDim2.new(1, 0, 0, 30)
-buttonsContainer.Position = UDim2.new(0, 0, 1, -32)
-buttonsContainer.BackgroundTransparency = 1
-buttonsContainer.ZIndex = 2
-buttonsContainer.Parent = mainFrame
-
--- Botão INICIAR
-local btnIniciar = Instance.new("TextButton")
-btnIniciar.Name = "BtnIniciar"
-btnIniciar.Size = UDim2.new(0, 54, 1, 0)
-btnIniciar.Position = UDim2.new(0, 2, 0, 0)
-btnIniciar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-btnIniciar.BorderSizePixel = 0
-btnIniciar.Text = "INICIAR" -- MAIÚSCULO
-btnIniciar.TextColor3 = Color3.fromRGB(255, 255, 255)
-btnIniciar.Font = Enum.Font.Garamond
-btnIniciar.TextSize = 12
-btnIniciar.ZIndex = 3
-btnIniciar.Parent = buttonsContainer
-
-local btnIniciarStroke = Instance.new("UIStroke")
-btnIniciarStroke.Color = Color3.fromRGB(60, 60, 60)
-btnIniciarStroke.Thickness = 1
-btnIniciarStroke.Parent = btnIniciar
-
--- Botão Fechar X
-local btnFecharX = Instance.new("ImageButton")
-btnFecharX.Name = "BtnFecharX"
-btnFecharX.Size = UDim2.new(0, 30, 0, 30)
-btnFecharX.Position = UDim2.new(0.5, 0, 0.5, 0)
-btnFecharX.AnchorPoint = Vector2.new(0.5, 0.5)
-btnFecharX.BackgroundTransparency = 1
-btnFecharX.Image = "rbxassetid://130753754985567" -- NOVO ID DO X ATUALIZADO
-btnFecharX.ZIndex = 3
-btnFecharX.Parent = buttonsContainer
-
--- Botão REDEFINIR
-local btnRedefinir = Instance.new("TextButton")
-btnRedefinir.Name = "BtnRedefinir"
-btnRedefinir.Size = UDim2.new(0, 54, 1, 0)
-btnRedefinir.Position = UDim2.new(1, -56, 0, 0)
-btnRedefinir.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-btnRedefinir.BorderSizePixel = 0
-btnRedefinir.Text = "REDEFINIR" -- MAIÚSCULO
-btnRedefinir.TextColor3 = Color3.fromRGB(255, 255, 255)
-btnRedefinir.Font = Enum.Font.Garamond
-btnRedefinir.TextSize = 10
-btnRedefinir.ZIndex = 3
-btnRedefinir.Parent = buttonsContainer
-
-local btnRedefinirStroke = Instance.new("UIStroke")
-btnRedefinirStroke.Color = Color3.fromRGB(60, 60, 60)
-btnRedefinirStroke.Thickness = 1
-btnRedefinirStroke.Parent = btnRedefinir
-
--- Botão Externo de Abrir/Fechar
-local btnAlternarInterface = Instance.new("ImageButton")
-btnAlternarInterface.Name = "BtnAlternarInterface"
-btnAlternarInterface.Size = UDim2.new(0, 70, 0, 70)
-btnAlternarInterface.Position = UDim2.new(0, 16, 0, 78)
-btnAlternarInterface.BackgroundTransparency = 1
-btnAlternarInterface.Image = "rbxassetid://78167069467517"
-btnAlternarInterface.ZIndex = 5
-btnAlternarInterface.Parent = screenGui
-
-tornarArrastavel(btnAlternarInterface) -- Torna o botão externo arrastável também!
-
-
---------------------------------------------------------------------------------
--- 3. LÓGICA DO CRONÔMETRO
---------------------------------------------------------------------------------
-
-local tempoDecorrido = 0
-local executando = false
-local conexaoHeartbeat = nil
-local LIMITE_MAXIMO_SEGUNDOS = 6039.99
-
-local function atualizarTexto()
-	if tempoDecorrido >= LIMITE_MAXIMO_SEGUNDOS then
-		tempoDecorrido = LIMITE_MAXIMO_SEGUNDOS
-		executando = false
-		btnIniciar.Text = "INICIAR"
-		if conexaoHeartbeat then
-			conexaoHeartbeat:Disconnect()
-			conexaoHeartbeat = nil
-		end
-	end
-
-	local minutos = math.floor(tempoDecorrido / 60)
-	local segundos = math.floor(tempoDecorrido % 60)
-	local centesimos = math.floor((tempoDecorrido % 1) * 100)
-
-	timeLabel.Text = string.format("%02d:%02d.%02d", minutos, segundos, centesimos)
-end
-
-btnIniciar.MouseButton1Click:Connect(function()
-	if executando then
-		executando = false
-		btnIniciar.Text = "INICIAR" -- MAIÚSCULO
-		if conexaoHeartbeat then
-			conexaoHeartbeat:Disconnect()
-			conexaoHeartbeat = nil
-		end
-	else
-		executando = true
-		btnIniciar.Text = "PAUSAR" -- MAIÚSCULO
-		
-		local tempoAnterior = os.clock()
-		conexaoHeartbeat = RunService.Heartbeat:Connect(function()
-			local tempoAtual = os.clock()
-			local dt = tempoAtual - tempoAnterior
-			tempoAnterior = tempoAtual
-			
-			tempoDecorrido = tempoDecorrido + dt
-			atualizarTexto()
-		end)
-	end
-end)
-
-btnRedefinir.MouseButton1Click:Connect(function()
-	executando = false
-	btnIniciar.Text = "INICIAR"
-	if conexaoHeartbeat then
-		conexaoHeartbeat:Disconnect()
-		conexaoHeartbeat = nil
-	end
-	tempoDecorrido = 0
-	timeLabel.Text = "00:00.00"
-end)
-
-btnFecharX.MouseButton1Click:Connect(function()
-	if conexaoHeartbeat then
-		conexaoHeartbeat:Disconnect()
-		conexaoHeartbeat = nil
-	end
-	screenGui:Destroy()
-end)
-
-btnAlternarInterface.MouseButton1Click:Connect(function()
-	mainFrame.Visible = not mainFrame.Visible
-end)
+mainFrame.BackgroundColor3 = Color3.fromRGB(0
