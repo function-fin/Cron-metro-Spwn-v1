@@ -5,6 +5,10 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+-- IDs das imagens fornecidas
+local ID_FECHAR = "rbxassetid://114065081553101"
+local ID_SOL = "rbxassetid://78774633521849"
+
 local function tornarArrastavel(guiElement)
 	local dragging = false
 	local dragStart = nil
@@ -51,6 +55,7 @@ local function tornarArrastavel(guiElement)
 	end)
 end
 
+-- Remove GUI antiga
 local guiAntiga = playerGui:FindFirstChild("CronometroScreenGui")
 if guiAntiga then
 	guiAntiga:Destroy()
@@ -63,112 +68,157 @@ screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
 
+-- UIScale (Mantido o tamanho que você configurou)
 local UiScale = Instance.new("UIScale")
 UiScale.Parent = screenGui
 
 local function UpdateUIScale()
 	if not UserInputService.TouchEnabled then
-		UiScale.Scale = 1.9 -- 90% maior no PC
+		UiScale.Scale = 1.9
 	else
-		UiScale.Scale = 1.0 -- Tamanho padrão no mobile
+		UiScale.Scale = 1.0
 	end
 end
 UpdateUIScale()
 UserInputService:GetPropertyChangedSignal("TouchEnabled"):Connect(UpdateUIScale)
 
+-- =========================================================
+-- FRAME PRINCIPAL (Estilo Arcade)
+-- =========================================================
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 180, 0, 150)
+mainFrame.Size = UDim2.new(0, 220, 0, 170) -- Ajustado para caber os textos
 mainFrame.Position = UDim2.new(0, 240, 0, 4)
 mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-mainFrame.BackgroundTransparency = 0.35
+mainFrame.BackgroundTransparency = 0
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Parent = screenGui
 
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 10)
-mainCorner.Parent = mainFrame
+-- Borda branca grossa
+local borda = Instance.new("UIStroke")
+borda.Color = Color3.fromRGB(255, 255, 255)
+borda.Thickness = 3
+borda.Parent = mainFrame
 
-local mainStroke = Instance.new("UIStroke")
-mainStroke.Color = Color3.fromRGB(255, 255, 255)
-mainStroke.Thickness = 1.5
-mainStroke.Transparency = 0.6
-mainStroke.Parent = mainFrame
-
-local closeButton = Instance.new("TextButton")
+-- =========================================================
+-- BOTÃO FECHAR (X)
+-- =========================================================
+local closeButton = Instance.new("ImageButton")
 closeButton.Name = "CloseButton"
-closeButton.Size = UDim2.new(0, 24, 0, 24)
-closeButton.Position = UDim2.new(1, -28, 0, 4)
-closeButton.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-closeButton.Text = "X"
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.TextScaled = true
-closeButton.Font = Enum.Font.GothamBold
-closeButton.AutoButtonColor = true
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+closeButton.BorderSizePixel = 0
+closeButton.Image = ID_FECHAR
+closeButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.Parent = mainFrame
 
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 6)
-closeCorner.Parent = closeButton
+local closeBorda = Instance.new("UIStroke")
+closeBorda.Color = Color3.fromRGB(255, 255, 255)
+closeBorda.Thickness = 2
+closeBorda.Parent = closeButton
 
 closeButton.MouseButton1Click:Connect(function()
 	screenGui:Destroy()
 end)
 
+-- =========================================================
+-- CABEÇALHO (Símbolo + Título)
+-- =========================================================
+local headerFrame = Instance.new("Frame")
+headerFrame.Name = "Header"
+headerFrame.Size = UDim2.new(1, -45, 0, 35)
+headerFrame.Position = UDim2.new(0, 5, 0, 5)
+headerFrame.BackgroundTransparency = 1
+headerFrame.Parent = mainFrame
+
+local iconSol = Instance.new("ImageLabel")
+iconSol.Name = "IconSol"
+iconSol.Size = UDim2.new(0, 30, 0, 30)
+iconSol.Position = UDim2.new(0, 0, 0, 0)
+iconSol.BackgroundTransparency = 1
+iconSol.Image = ID_SOL
+iconSol.ImageColor3 = Color3.fromRGB(255, 255, 255)
+iconSol.Parent = headerFrame
+
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
-titleLabel.Size = UDim2.new(1, -40, 0, 24)
-titleLabel.Position = UDim2.new(0, 8, 0, 4)
+titleLabel.Size = UDim2.new(1, -35, 1, 0)
+titleLabel.Position = UDim2.new(0, 35, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "⏱ Cronômetro"
+titleLabel.Text = "Cronômetro"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextScaled = true
-titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 24
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Parent = mainFrame
+titleLabel.FontFace = Font.new("rbxasset://fonts/families/Arcade.json") -- Fonte Arcade nativa do Roblox
+titleLabel.Parent = headerFrame
 
+-- =========================================================
+-- MOSTRADOR DO TEMPO
+-- =========================================================
 local timeLabel = Instance.new("TextLabel")
 timeLabel.Name = "TimeLabel"
-timeLabel.Size = UDim2.new(1, -16, 0, 48)
-timeLabel.Position = UDim2.new(0, 8, 0, 34)
+timeLabel.Size = UDim2.new(1, 0, 0, 60)
+timeLabel.Position = UDim2.new(0, 0, 0, 45)
 timeLabel.BackgroundTransparency = 1
 timeLabel.Text = "00:00.00"
-timeLabel.TextColor3 = Color3.fromRGB(0, 255, 120)
-timeLabel.TextScaled = true
-timeLabel.Font = Enum.Font.Code
+timeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+timeLabel.TextSize = 56
+timeLabel.FontFace = Font.new("rbxasset://fonts/families/Arcade.json")
 timeLabel.Parent = mainFrame
 
+-- =========================================================
+-- BOTÕES (Iniciar e Resetar)
+-- =========================================================
 local startButton = Instance.new("TextButton")
 startButton.Name = "StartButton"
-startButton.Size = UDim2.new(0.5, -12, 0, 36)
-startButton.Position = UDim2.new(0, 8, 1, -44)
-startButton.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
+startButton.Size = UDim2.new(0.5, -15, 0, 35)
+startButton.Position = UDim2.new(0, 10, 1, -45)
+startButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+startButton.BorderSizePixel = 0
 startButton.Text = "Iniciar"
 startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-startButton.TextScaled = true
-startButton.Font = Enum.Font.GothamSemibold
+startButton.TextSize = 24
+startButton.FontFace = Font.new("rbxasset://fonts/families/Arcade.json")
 startButton.Parent = mainFrame
 
-local startCorner = Instance.new("UICorner")
-startCorner.CornerRadius = UDim.new(0, 6)
-startCorner.Parent = startButton
+local startBorda = Instance.new("UIStroke")
+startBorda.Color = Color3.fromRGB(255, 255, 255)
+startBorda.Thickness = 2
+startBorda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+startBorda.Parent = startButton
 
 local resetButton = Instance.new("TextButton")
 resetButton.Name = "ResetButton"
-resetButton.Size = UDim2.new(0.5, -12, 0, 36)
-resetButton.Position = UDim2.new(0.5, 4, 1, -44)
-resetButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+resetButton.Size = UDim2.new(0.5, -15, 0, 35)
+resetButton.Position = UDim2.new(0.5, 5, 1, -45)
+resetButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+resetButton.BorderSizePixel = 0
 resetButton.Text = "Resetar"
 resetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-resetButton.TextScaled = true
-resetButton.Font = Enum.Font.GothamSemibold
+resetButton.TextSize = 24
+resetButton.FontFace = Font.new("rbxasset://fonts/families/Arcade.json")
 resetButton.Parent = mainFrame
 
-local resetCorner = Instance.new("UICorner")
-resetCorner.CornerRadius = UDim.new(0, 6)
-resetCorner.Parent = resetButton
+local resetBorda = Instance.new("UIStroke")
+resetBorda.Color = Color3.fromRGB(255, 255, 255)
+resetBorda.Thickness = 2
+resetBorda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+resetBorda.Parent = resetButton
 
+-- Arredondar levemente as bordas dos botões (como na imagem)
+local cornerStart = Instance.new("UICorner")
+cornerStart.CornerRadius = UDim.new(0, 6)
+cornerStart.Parent = startButton
+
+local cornerReset = Instance.new("UICorner")
+cornerReset.CornerRadius = UDim.new(0, 6)
+cornerReset.Parent = resetButton
+
+-- =========================================================
+-- LÓGICA DO CRONÔMETRO
+-- =========================================================
 local rodando = false
 local inicio = 0
 local acumulado = 0
@@ -196,7 +246,6 @@ local function iniciar()
 	rodando = true
 	inicio = os.clock()
 	startButton.Text = "Pausar"
-	startButton.BackgroundColor3 = Color3.fromRGB(200, 160, 40)
 	if renderConn then renderConn:Disconnect() end
 	renderConn = RunService.RenderStepped:Connect(atualizarTempo)
 end
@@ -206,7 +255,6 @@ local function pausar()
 	acumulado = acumulado + (os.clock() - inicio)
 	rodando = false
 	startButton.Text = "Iniciar"
-	startButton.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
 	if renderConn then
 		renderConn:Disconnect()
 		renderConn = nil
@@ -223,7 +271,6 @@ local function resetar()
 		renderConn = nil
 	end
 	startButton.Text = "Iniciar"
-	startButton.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
 	timeLabel.Text = "00:00.00"
 end
 
