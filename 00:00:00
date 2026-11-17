@@ -8,32 +8,31 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- ==========================================
 -- FUNÇÃO DE ARRASTAR
 -- ==========================================
-local function tornarArrastavel(guiElement)
+local function tornarArrastavel(guiElement, clicarAcao)
 	local dragging = false
 	local dragStart = nil
 	local startPos = nil
 	local dragConnection = nil
+	local moved = false
 
 	local function updateInput(input)
 		local delta = input.Position - dragStart
 		guiElement.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
+			startPos.X.Scale, 
+			startPos.X.Offset + delta.X, 
+			startPos.Y.Scale, 
 			startPos.Y.Offset + delta.Y
 		)
 	end
 
 	guiElement.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
+			moved = false
 			dragStart = input.Position
 			startPos = guiElement.Position
-
-			if dragConnection then
-				dragConnection:Disconnect()
-			end
+			
+			if dragConnection then dragConnection:Disconnect() end
 			dragConnection = input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
 					dragging = false
@@ -41,14 +40,20 @@ local function tornarArrastavel(guiElement)
 						dragConnection:Disconnect()
 						dragConnection = nil
 					end
+					if not moved and clicarAcao then
+						clicarAcao()
+					end
 				end
 			end)
 		end
 	end)
 
 	UserInputService.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
-			or input.UserInputType == Enum.UserInputType.Touch) then
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local delta = input.Position - dragStart
+			if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+				moved = true
+			end
 			updateInput(input)
 		end
 	end)
@@ -66,7 +71,7 @@ screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
 
--- UIScale (PC maior, mobile normal)
+-- UIScale
 local UiScale = Instance.new("UIScale")
 UiScale.Parent = screenGui
 
@@ -81,7 +86,7 @@ UpdateUIScale()
 UserInputService:GetPropertyChangedSignal("TouchEnabled"):Connect(UpdateUIScale)
 
 -- ==========================================
--- FRAME PRINCIPAL (Fundo Preto com Contorno)
+-- FRAME PRINCIPAL
 -- ==========================================
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
@@ -101,9 +106,7 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 8)
 mainCorner.Parent = mainFrame
 
--- ==========================================
--- ÍCONE DO TÍTULO
--- ==========================================
+-- Ícone do Título
 local icon = Instance.new("ImageLabel")
 icon.Name = "Icon"
 icon.Size = UDim2.new(0, 24, 0, 24)
@@ -114,9 +117,7 @@ icon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 icon.ScaleType = Enum.ScaleType.Fit
 icon.Parent = mainFrame
 
--- ==========================================
--- TÍTULO (Fonte Arcade)
--- ==========================================
+-- Título
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(1, -70, 0, 24)
@@ -129,9 +130,7 @@ titleLabel.Font = Enum.Font.Arcade
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = mainFrame
 
--- ==========================================
--- BOTÃO FECHAR
--- ==========================================
+-- Botão de Fechar o Script Inteiro (X)
 local closeButton = Instance.new("ImageButton")
 closeButton.Name = "CloseButton"
 closeButton.Size = UDim2.new(0, 24, 0, 24)
@@ -143,12 +142,10 @@ closeButton.ScaleType = Enum.ScaleType.Fit
 closeButton.Parent = mainFrame
 
 closeButton.MouseButton1Click:Connect(function()
-	screenGui:Destroy()
+	screenGui:Destroy() -- Fecha o script completamente, incluindo o botão externo
 end)
 
--- ==========================================
--- MOSTRADOR DE TEMPO (Fonte Arcade)
--- ==========================================
+-- Mostrador de Tempo
 local timeLabel = Instance.new("TextLabel")
 timeLabel.Name = "TimeLabel"
 timeLabel.Size = UDim2.new(1, -20, 0, 48)
@@ -172,14 +169,12 @@ local function criarBotaoRetro(nome, texto, posX, tamanhoX)
 	btn.Text = texto
 	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	
-	-- CORREÇÃO: Desativado TextScaled e definido tamanho fixo
-	btn.TextScaled = false
-	btn.TextSize = 16 
-	
+	-- Correção: Impede que a fonte Arcade vaze para fora do botão
+	btn.TextScaled = false 
+	btn.TextSize = 14 
 	btn.Font = Enum.Font.Arcade
 	btn.Parent = mainFrame
 	
-	-- Borda branca arredondada
 	local stroke = Instance.new("UIStroke")
 	stroke.Color = Color3.fromRGB(255, 255, 255)
 	stroke.Thickness = 2
@@ -194,6 +189,25 @@ end
 
 local startButton = criarBotaoRetro("StartButton", "Iniciar", 0.05, 0.42)
 local resetButton = criarBotaoRetro("ResetButton", "Resetar", 0.53, 0.42)
+
+-- ==========================================
+-- BOTÃO EXTERNO (ABRIR/FECHAR - 30% MAIOR)
+-- ==========================================
+local toggleButton = Instance.new("ImageButton")
+toggleButton.Name = "ToggleButton"
+-- Aumentado em 30% de 40x40 para 52x52
+toggleButton.Size = UDim2.new(0, 52, 0, 52) 
+toggleButton.Position = UDim2.new(0, 20, 0, 200)
+toggleButton.BackgroundTransparency = 1
+toggleButton.Image = "rbxassetid://85252634424131"
+toggleButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.ScaleType = Enum.ScaleType.Fit
+toggleButton.Parent = screenGui
+
+-- Ação de clique do botão externo
+tornarArrastavel(toggleButton, function()
+	mainFrame.Visible = not mainFrame.Visible
+end)
 
 -- ==========================================
 -- LÓGICA DO CRONÔMETRO
@@ -260,7 +274,7 @@ end)
 resetButton.MouseButton1Click:Connect(resetar)
 
 -- ==========================================
--- ARRASTAR E LIMPEZA
+-- ARRASTAR FRAME PRINCIPAL E LIMPEZA
 -- ==========================================
 tornarArrastavel(mainFrame)
 
