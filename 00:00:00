@@ -9,61 +9,234 @@ local function tornarArrastavel(guiElement)
 	local dragging = false
 	local dragStart = nil
 	local startPos = nil
+	local dragConnection = nil
 
 	local function updateInput(input)
 		local delta = input.Position - dragStart
 		guiElement.Position = UDim2.new(
-			startPos.X.Scale, 
-			startPos.X.Offset + delta.X, 
-			startPos.Y.Scale, 
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
 			startPos.Y.Offset + delta.Y
 		)
 	end
 
 	guiElement.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			dragStart = input.Position
 			startPos = guiElement.Position
-			
-			local connection
-			connection = input.Changed:Connect(function()
+
+			if dragConnection then
+				dragConnection:Disconnect()
+			end
+			dragConnection = input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
 					dragging = false
-					connection:Disconnect()
+					if dragConnection then
+						dragConnection:Disconnect()
+						dragConnection = nil
+					end
 				end
 			end)
 		end
 	end)
 
 	UserInputService.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+			or input.UserInputType == Enum.UserInputType.Touch) then
 			updateInput(input)
 		end
 	end)
+end
+
+local guiAntiga = playerGui:FindFirstChild("CronometroScreenGui")
+if guiAntiga then
+	guiAntiga:Destroy()
 end
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CronometroScreenGui"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
 
--- // CONFIGURAÇÃO DE UISCALE SOLICITADA
-local UiScale = Instance.new("UIScale", screenGui)
+local UiScale = Instance.new("UIScale")
+UiScale.Parent = screenGui
+
 local function UpdateUIScale()
-    if not UserInputService.TouchEnabled then
-        UiScale.Scale = 1.9 -- 90% maior no PC
-    else
-        UiScale.Scale = 1.0 -- Tamanho padrão no mobile
-    end
+	if not UserInputService.TouchEnabled then
+		UiScale.Scale = 1.9 -- 90% maior no PC
+	else
+		UiScale.Scale = 1.0 -- Tamanho padrão no mobile
+	end
 end
 UpdateUIScale()
 UserInputService:GetPropertyChangedSignal("TouchEnabled"):Connect(UpdateUIScale)
 
--- Frame Principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 180, 0, 150)
 mainFrame.Position = UDim2.new(0, 240, 0, 4)
-mainFrame.BackgroundColor3 = Color3.fromRGB(0
+mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainFrame.BackgroundTransparency = 0.35
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 10)
+mainCorner.Parent = mainFrame
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = Color3.fromRGB(255, 255, 255)
+mainStroke.Thickness = 1.5
+mainStroke.Transparency = 0.6
+mainStroke.Parent = mainFrame
+
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseButton"
+closeButton.Size = UDim2.new(0, 24, 0, 24)
+closeButton.Position = UDim2.new(1, -28, 0, 4)
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextScaled = true
+closeButton.Font = Enum.Font.GothamBold
+closeButton.AutoButtonColor = true
+closeButton.Parent = mainFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = closeButton
+
+closeButton.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
+end)
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, -40, 0, 24)
+titleLabel.Position = UDim2.new(0, 8, 0, 4)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "⏱ Cronômetro"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = mainFrame
+
+local timeLabel = Instance.new("TextLabel")
+timeLabel.Name = "TimeLabel"
+timeLabel.Size = UDim2.new(1, -16, 0, 48)
+timeLabel.Position = UDim2.new(0, 8, 0, 34)
+timeLabel.BackgroundTransparency = 1
+timeLabel.Text = "00:00.00"
+timeLabel.TextColor3 = Color3.fromRGB(0, 255, 120)
+timeLabel.TextScaled = true
+timeLabel.Font = Enum.Font.Code
+timeLabel.Parent = mainFrame
+
+local startButton = Instance.new("TextButton")
+startButton.Name = "StartButton"
+startButton.Size = UDim2.new(0.5, -12, 0, 36)
+startButton.Position = UDim2.new(0, 8, 1, -44)
+startButton.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
+startButton.Text = "Iniciar"
+startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+startButton.TextScaled = true
+startButton.Font = Enum.Font.GothamSemibold
+startButton.Parent = mainFrame
+
+local startCorner = Instance.new("UICorner")
+startCorner.CornerRadius = UDim.new(0, 6)
+startCorner.Parent = startButton
+
+local resetButton = Instance.new("TextButton")
+resetButton.Name = "ResetButton"
+resetButton.Size = UDim2.new(0.5, -12, 0, 36)
+resetButton.Position = UDim2.new(0.5, 4, 1, -44)
+resetButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+resetButton.Text = "Resetar"
+resetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+resetButton.TextScaled = true
+resetButton.Font = Enum.Font.GothamSemibold
+resetButton.Parent = mainFrame
+
+local resetCorner = Instance.new("UICorner")
+resetCorner.CornerRadius = UDim.new(0, 6)
+resetCorner.Parent = resetButton
+
+local rodando = false
+local inicio = 0
+local acumulado = 0
+local renderConn = nil
+
+local function formatarTempo(segundos)
+	local min = math.floor(segundos / 60)
+	local sec = math.floor(segundos % 60)
+	local cent = math.floor((segundos * 100) % 100)
+	return string.format("%02d:%02d.%02d", min, sec, cent)
+end
+
+local function atualizarTempo()
+	local total
+	if rodando then
+		total = acumulado + (os.clock() - inicio)
+	else
+		total = acumulado
+	end
+	timeLabel.Text = formatarTempo(total)
+end
+
+local function iniciar()
+	if rodando then return end
+	rodando = true
+	inicio = os.clock()
+	startButton.Text = "Pausar"
+	startButton.BackgroundColor3 = Color3.fromRGB(200, 160, 40)
+	if renderConn then renderConn:Disconnect() end
+	renderConn = RunService.RenderStepped:Connect(atualizarTempo)
+end
+
+local function pausar()
+	if not rodando then return end
+	acumulado = acumulado + (os.clock() - inicio)
+	rodando = false
+	startButton.Text = "Iniciar"
+	startButton.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
+	if renderConn then
+		renderConn:Disconnect()
+		renderConn = nil
+	end
+	atualizarTempo()
+end
+
+local function resetar()
+	rodando = false
+	acumulado = 0
+	inicio = 0
+	if renderConn then
+		renderConn:Disconnect()
+		renderConn = nil
+	end
+	startButton.Text = "Iniciar"
+	startButton.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
+	timeLabel.Text = "00:00.00"
+end
+
+startButton.MouseButton1Click:Connect(function()
+	if rodando then pausar() else iniciar() end
+end)
+
+resetButton.MouseButton1Click:Connect(resetar)
+
+tornarArrastavel(mainFrame)
+
+player.AncestryChanged:Connect(function()
+	if not player:IsDescendantOf(game) then
+		if renderConn then renderConn:Disconnect() end
+	end
+end)
