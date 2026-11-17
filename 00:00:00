@@ -81,17 +81,17 @@ UpdateUIScale()
 UserInputService:GetPropertyChangedSignal("TouchEnabled"):Connect(UpdateUIScale)
 
 -- ==========================================
--- FRAME PRINCIPAL (Sem fundo, apenas contorno)
+-- FRAME PRINCIPAL (Fundo Preto com Contorno)
 -- ==========================================
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 220, 0, 160)
 mainFrame.Position = UDim2.new(0, 240, 0, 4)
-mainFrame.BackgroundTransparency = 1 -- Fundo 100% transparente
+mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+mainFrame.BackgroundTransparency = 0.2
 mainFrame.Active = true
 mainFrame.Parent = screenGui
 
--- Borda branca (UIStroke) com cantos arredondados
 local mainStroke = Instance.new("UIStroke")
 mainStroke.Color = Color3.fromRGB(255, 255, 255)
 mainStroke.Thickness = 2
@@ -102,7 +102,7 @@ mainCorner.CornerRadius = UDim.new(0, 8)
 mainCorner.Parent = mainFrame
 
 -- ==========================================
--- ÍCONE DO TÍTULO (Símbolo ilustrativo)
+-- ÍCONE DO TÍTULO
 -- ==========================================
 local icon = Instance.new("ImageLabel")
 icon.Name = "Icon"
@@ -130,13 +130,13 @@ titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = mainFrame
 
 -- ==========================================
--- BOTÃO FECHAR (Apenas o X puro, sem fundo)
+-- BOTÃO FECHAR
 -- ==========================================
 local closeButton = Instance.new("ImageButton")
 closeButton.Name = "CloseButton"
 closeButton.Size = UDim2.new(0, 24, 0, 24)
 closeButton.Position = UDim2.new(1, -34, 0, 10)
-closeButton.BackgroundTransparency = 1 -- Puro, sem fundo
+closeButton.BackgroundTransparency = 1
 closeButton.Image = "rbxassetid://78774633521849"
 closeButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.ScaleType = Enum.ScaleType.Fit
@@ -161,9 +161,8 @@ timeLabel.Font = Enum.Font.Arcade
 timeLabel.Parent = mainFrame
 
 -- ==========================================
--- BOTÕES INFERIORES (Contorno estilo retrô)
+-- BOTÕES INFERIORES (CORRIGIDOS)
 -- ==========================================
--- Função para criar botões no estilo da imagem
 local function criarBotaoRetro(nome, texto, posX, tamanhoX)
 	local btn = Instance.new("TextButton")
 	btn.Name = nome
@@ -172,7 +171,11 @@ local function criarBotaoRetro(nome, texto, posX, tamanhoX)
 	btn.BackgroundTransparency = 1
 	btn.Text = texto
 	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.TextScaled = true
+	
+	-- CORREÇÃO: Desativado TextScaled e definido tamanho fixo
+	btn.TextScaled = false
+	btn.TextSize = 16 
+	
 	btn.Font = Enum.Font.Arcade
 	btn.Parent = mainFrame
 	
